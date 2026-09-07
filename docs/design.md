@@ -1,6 +1,6 @@
 # Emalia Design
 
-Version: 0.2.0
+Version: 0.4.0
 
 Emalia is an agent that lives in an email inbox, plus the email toolkit that
 makes that possible. Both halves ship in one package and are usable
@@ -65,13 +65,94 @@ The part that replaces the original `EmailManager`.
 
 | Module | Responsibility |
 |---|---|
-| `accounts.py` | `MailAccount`: credentials plus SMTP/IMAP endpoints, with provider presets for gmail, outlook, yahoo, icloud, fastmail, zoho. |
+| `accounts.py` | `MailAccount`: credentials plus SMTP/IMAP endpoints, with provider presets for gmail, outlook, yahoo, icloud, fastmail, zoho and proton. |
+| `oauth.py` | `OAuthCredentials` and `ServiceAccountCredentials`: refresh-token exchange, RS256 assertions for domain-wide delegation, in-memory access-token caching, the XOAUTH2 SASL string, credential resolution from the environment, and the `OAuthProvider` records that hold what differs between identity providers. |
+| `folders.py` | Modified UTF-7 (RFC 3501 §5.1.3) for mailbox names, and IMAP quoting. |
 | `models.py` | `EmailAddress`, `Attachment`, `EmailMessage`, `EmailSummary`. Plain dataclasses, no MIME leakage. |
 | `parse.py` | Raw RFC 822 bytes to `EmailMessage`. RFC 2047 header decoding, charset fallbacks, HTML to text, quoted-reply stripping. |
 | `compose.py` | `EmailMessage` to MIME. New, reply (with `In-Reply-To` and `References`), forward. Directory attachments are zipped. |
 | `imap.py` | `ImapSession`: a reconnecting context manager over `imaplib`. Search, fetch, flags, folders, move, delete. |
 | `smtp.py` | `SmtpSender`: a context manager over `smtplib`, SSL and STARTTLS. |
 | `client.py` | `MailClient`: the single facade, and the public import. |
+
+### Authentication
+
+`MailAccount` carries exactly one credential: a password, or something
+satisfying `TokenCredentials`. Two at once is rejected at construction rather
+than resolved by precedence, because that combination is what a half-finished
+migration looks like and choosing silently hides it.
+
+Token credentials go over XOAUTH2, the SASL mechanism Google and Microsoft both
+implement for IMAP and SMTP. Two implement it, and the split is the important
+part of this design:
+
+| | Obtained by | Expires | Suits |
+|---|---|---|---|
+| `OAuthCredentials` | A browser consent flow | Yes, and after seven days on an unverified app | A workstation |
+| `ServiceAccountCredentials` | Signing an assertion with a private key | No | A deployed system |
+
+The second exists because the first cannot serve an unattended process
+honestly. A refresh token has to be minted by a human at a browser and can
+expire, which means a production deployment eventually pages someone to go and
+click something. A service account key is created by `gcloud`, rotated by
+`gcloud`, and never expires — the authorisation lives in a delegation an
+administrator granted once, not in the credential.
+
+`TokenCredentials` is a `Protocol` rather than a base class so the IMAP and
+SMTP sessions never learn which kind they hold. They ask for `access_token()`
+and build the same SASL string either way.
+
+`oauth.py` uses `urllib` rather than `requests`, so the claim that
+`emalia.mail` needs nothing beyond the standard library survives. The one
+exception is the RS256 signature a service account assertion needs, which the
+standard library cannot produce; `cryptography` is imported lazily inside the
+signing function and ships as the optional `gcp` extra, so the two paths that
+never sign anything pull in nothing.
+
+The interactive consent flow lives in `emalia.auth`, one layer up, not here.
+The mail layer needs a refresh token and nothing else; opening a browser and
+running a loopback web server is a setup-time concern that a library embedding
+the toolkit should never have linked in.
+
+Several sources feed the same credential — an environment triple, a file path,
+inline JSON, or the flow that writes a file — because the deployment shapes
+genuinely differ. A container has a secret store and no filesystem; a
+workstation has the reverse. See [authentication.md](authentication.md).
+
+### Providers
+
+The consent flow is plain RFC 6749 with PKCE, which every provider implements
+the same way. What differs is three strings — the authorization endpoint, the
+token endpoint, and the scope that grants mailbox access — so those are
+gathered into `OAuthProvider` records rather than branched on at each call site.
+Adding a provider is a record and a CLI sub-app, not a new code path.
+
+Each provider writes its own token file, so authorising Google and Microsoft on
+one machine does not have the second overwrite the first.
+
+Microsoft has no analogue of the service account path. Its unattended
+credential is the client credentials grant with application permissions, which
+needs a tenant-wide admin grant and an application access policy to bound which
+mailboxes it reaches — a different mechanism, deliberately left out rather than
+approximated.
+
+### Mailbox names
+
+RFC 3501 encodes mailbox names in a modified UTF-7: printable ASCII stands for
+itself, everything else is BASE64-encoded UTF-16BE between `&` and `-`, with
+`,` substituted for `/` so the result survives the hierarchy delimiter. Python
+ships a `utf-7` codec, but it is the unmodified RFC 2152 one and emits `+`
+where IMAP requires `&`, so `folders.py` implements the variant directly.
+
+Encoding is applied unconditionally on the way out, since an ASCII name passes
+through unchanged. `select()` keeps the decoded name on the session, because
+that is what error messages and a reconnect use.
+
+`list_folders()` reads names sent as IMAP literals as well as quoted and atom
+forms. The literal is the form servers use for precisely the non-ASCII names
+this exists to support, so skipping it would have left the gap half-closed. A
+name that will not decode is returned raw and logged rather than dropped: one
+malformed entry should not silently shorten the listing.
 
 ### Why a facade
 

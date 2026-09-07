@@ -129,8 +129,9 @@ Anything red is a setup problem, and the message says which. The usual ones:
 
 | Message | Fix |
 |---|---|
-| `[AUTHENTICATIONFAILED] Invalid credentials` | Use an app password, not the account password |
+| `[AUTHENTICATIONFAILED] Invalid credentials` | Use an app password, not the account password. If you cannot create one, see [authentication.md](authentication.md) |
 | `535 5.7.8 Username and Password not accepted` | Same, on the SMTP side |
+| `invalid_grant` on an OAuth setup | The refresh token expired or was revoked; [authentication.md](authentication.md) explains which |
 | `credentials: ANTHROPIC_API_KEY is not set` | Add it to `.env` |
 | `invalid: allowed_senders is empty` | Add your address, as above |
 

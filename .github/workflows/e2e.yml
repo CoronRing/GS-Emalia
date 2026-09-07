@@ -41,6 +41,12 @@ jobs:
           EMALIA_E2E_PROVIDER: ${{ vars.EMALIA_E2E_PROVIDER || 'gmail' }}
           EMALIA_E2E_PEER_ADDRESS: ${{ secrets.EMALIA_E2E_PEER_ADDRESS }}
           EMALIA_E2E_PEER_PASSWORD: ${{ secrets.EMALIA_E2E_PEER_PASSWORD }}
+          # Empty unless the mailbox is on OAuth rather than an app password.
+          # The account resolver treats blank as unset, so both setups work
+          # from the same workflow without a conditional.
+          EMALIA_E2E_OAUTH_CLIENT_ID: ${{ secrets.EMALIA_E2E_OAUTH_CLIENT_ID }}
+          EMALIA_E2E_OAUTH_CLIENT_SECRET: ${{ secrets.EMALIA_E2E_OAUTH_CLIENT_SECRET }}
+          EMALIA_E2E_OAUTH_REFRESH_TOKEN: ${{ secrets.EMALIA_E2E_OAUTH_REFRESH_TOKEN }}
           EMALIA_E2E_TIMEOUT: "240"
         run: pytest tests/e2e -m "e2e and not llm" -v
 
@@ -53,6 +59,12 @@ jobs:
           EMALIA_E2E_PROVIDER: ${{ vars.EMALIA_E2E_PROVIDER || 'gmail' }}
           EMALIA_E2E_PEER_ADDRESS: ${{ secrets.EMALIA_E2E_PEER_ADDRESS }}
           EMALIA_E2E_PEER_PASSWORD: ${{ secrets.EMALIA_E2E_PEER_PASSWORD }}
+          # Empty unless the mailbox is on OAuth rather than an app password.
+          # The account resolver treats blank as unset, so both setups work
+          # from the same workflow without a conditional.
+          EMALIA_E2E_OAUTH_CLIENT_ID: ${{ secrets.EMALIA_E2E_OAUTH_CLIENT_ID }}
+          EMALIA_E2E_OAUTH_CLIENT_SECRET: ${{ secrets.EMALIA_E2E_OAUTH_CLIENT_SECRET }}
+          EMALIA_E2E_OAUTH_REFRESH_TOKEN: ${{ secrets.EMALIA_E2E_OAUTH_REFRESH_TOKEN }}
           EMALIA_E2E_TIMEOUT: "240"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: pytest tests/e2e -m "e2e and llm" -v

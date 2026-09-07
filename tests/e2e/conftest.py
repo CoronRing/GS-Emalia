@@ -21,10 +21,12 @@ import os
 import time
 import uuid
 from collections.abc import Callable, Iterator
+from dataclasses import replace
 
 import pytest
 
 from emalia.config import EmaliaConfig, LLMSettings
+from emalia.errors import ConfigurationError
 from emalia.mail.accounts import MailAccount
 from emalia.mail.client import MailClient
 from emalia.mail.imap import SearchCriteria
@@ -60,6 +62,34 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 # -- accounts -----------------------------------------------------------------
 
 
+def _account_from(prefix: str, display_name: str, required: str) -> MailAccount:
+    """Build an account from one `EMALIA_E2E_*` prefix, or skip.
+
+    Goes through `MailAccount.from_env` rather than reading a password
+    directly, so the suite accepts an app password or an OAuth grant on exactly
+    the terms the real configuration does. Anything missing is a skip, not a
+    failure: an incomplete environment means "not set up for this", not "broken".
+
+    Args:
+        prefix: The variable prefix to read.
+        display_name: The ``From`` display name for this role.
+        required: What to say when the credentials are absent.
+
+    Returns:
+        The configured account.
+    """
+    if not _env(f"{prefix}ADDRESS"):
+        pytest.skip(required)
+    # Gmail is what the documented setup uses, and naming the provider for a
+    # second time in CI is noise. An explicit setting still wins.
+    os.environ.setdefault(f"{prefix}PROVIDER", "gmail")
+    try:
+        account = MailAccount.from_env(prefix)
+    except ConfigurationError as exc:
+        pytest.skip(f"{required} ({exc})")
+    return replace(account, display_name=display_name)
+
+
 @pytest.fixture(scope="session")
 def bot_account() -> MailAccount:
     """The mailbox under test.
@@ -67,15 +97,10 @@ def bot_account() -> MailAccount:
     Returns:
         The account built from `EMALIA_E2E_ADDRESS` and friends.
     """
-    address = _env("EMALIA_E2E_ADDRESS")
-    password = _env("EMALIA_E2E_PASSWORD")
-    if not address or not password:
-        pytest.skip("EMALIA_E2E_ADDRESS and EMALIA_E2E_PASSWORD are required")
-    return MailAccount.for_provider(
-        _env("EMALIA_E2E_PROVIDER") or "gmail",
-        address,
-        password,
-        display_name="Emalia E2E",
+    return _account_from(
+        "EMALIA_E2E_",
+        "Emalia E2E",
+        "EMALIA_E2E_ADDRESS and a credential are required; see docs/e2e-testing.md",
     )
 
 
@@ -91,18 +116,11 @@ def peer_account() -> MailAccount:
     Returns:
         The peer account.
     """
-    address = _env("EMALIA_E2E_PEER_ADDRESS")
-    password = _env("EMALIA_E2E_PEER_PASSWORD")
-    if not address or not password:
-        pytest.skip(
-            "EMALIA_E2E_PEER_ADDRESS and EMALIA_E2E_PEER_PASSWORD are required for the "
-            "inbound round trip; see docs/e2e-testing.md"
-        )
-    return MailAccount.for_provider(
-        _env("EMALIA_E2E_PEER_PROVIDER") or "gmail",
-        address,
-        password,
-        display_name="Emalia E2E Peer",
+    return _account_from(
+        "EMALIA_E2E_PEER_",
+        "Emalia E2E Peer",
+        "EMALIA_E2E_PEER_ADDRESS and a credential are required for the inbound "
+        "round trip; see docs/e2e-testing.md",
     )
 
 

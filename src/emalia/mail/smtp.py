@@ -15,6 +15,7 @@ from types import TracebackType
 
 from emalia.errors import MailAuthError, MailConnectionError
 from emalia.mail.accounts import MailAccount
+from emalia.mail.oauth import AUTH_FAILURE_HINTS, xoauth2_string
 
 __all__ = ["SmtpSender"]
 
@@ -80,12 +81,25 @@ class SmtpSender:
             ) from exc
 
         try:
-            conn.login(self.account.login, self.account.password)
+            if self.account.oauth is not None:
+                # `auth` reads the server's advertised mechanisms, which are
+                # only known after EHLO. `login` does that itself; `auth` does
+                # not, and on an implicit-TLS connection nothing has sent one
+                # yet.
+                conn.ehlo_or_helo_if_needed()
+                token = self.account.oauth.access_token()
+                conn.auth(
+                    "XOAUTH2",
+                    lambda challenge=None: xoauth2_string(self.account.login, token),
+                    initial_response_ok=True,
+                )
+            else:
+                conn.login(self.account.login, self.account.password)
         except smtplib.SMTPAuthenticationError as exc:
             conn.quit()
             raise MailAuthError(
-                f"SMTP login failed for {self.account.login}. "
-                "Most providers require an app password rather than the account password. "
+                f"SMTP {self.account.auth} authentication failed for {self.account.login}. "
+                f"{AUTH_FAILURE_HINTS[self.account.auth]} "
                 f"Server said: {exc}"
             ) from exc
         except smtplib.SMTPException as exc:

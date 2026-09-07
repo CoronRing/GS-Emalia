@@ -64,7 +64,12 @@ dependencies = [
 anthropic = ["anthropic>=0.40"]
 openai = ["openai>=1.40"]
 gemini = ["google-genai>=1.0"]
-all = ["emalia[anthropic,openai,gemini]"]
+# Service account authentication signs a JWT with RS256, which is the one thing
+# in the mail layer the standard library cannot do. Optional because the other
+# two credentials never sign anything, and `emalia.mail` should stay
+# dependency-free for everyone using those.
+gcp = ["cryptography>=42.0"]
+all = ["emalia[anthropic,openai,gemini,gcp]"]
 dev = [
     "emalia[all]",
     "pytest>=7.4",

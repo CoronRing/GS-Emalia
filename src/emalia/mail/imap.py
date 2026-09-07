@@ -17,18 +17,51 @@ import imaplib
 import logging
 import re
 import ssl
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from types import TracebackType
 from typing import Literal
 
 from emalia.errors import MailAuthError, MailConnectionError, MessageNotFoundError
 from emalia.mail.accounts import MailAccount
+from emalia.mail.folders import decode_folder, quote_folder
 from emalia.mail.models import EmailMessage
+from emalia.mail.oauth import AUTH_FAILURE_HINTS, xoauth2_string
 from emalia.mail.parse import parse_message
 
 __all__ = ["ImapSession", "SearchCriteria"]
 
 logger = logging.getLogger(__name__)
+
+_AUTH_HINTS = AUTH_FAILURE_HINTS
+
+
+def _xoauth2_responder(user: str, access_token: str) -> Callable[[bytes | None], bytes]:
+    """Build the callback `imaplib.IMAP4.authenticate` drives for XOAUTH2.
+
+    `imaplib` base64-encodes whatever the callback returns, so the raw SASL
+    string is what goes back. On failure the server does not close the
+    exchange: it sends a challenge holding a JSON error and waits for an empty
+    line before reporting NO. Returning the credential again there makes the
+    exchange hang, so every call after the first answers empty.
+
+    Args:
+        user: The login address.
+        access_token: A current access token.
+
+    Returns:
+        A callback suitable for `authenticate`.
+    """
+    sent = False
+
+    def respond(_challenge: bytes | None) -> bytes:
+        nonlocal sent
+        if sent:
+            return b""
+        sent = True
+        return xoauth2_string(user, access_token).encode("utf-8")
+
+    return respond
+
 
 FlagAction = Literal["add", "remove", "replace"]
 
@@ -41,6 +74,10 @@ _FLAG_ACTIONS: dict[str, str] = {
 # Servers return flags inside the FETCH response line, e.g.
 # b'12 (UID 34 FLAGS (\\Seen \\Answered) BODY[] {2048}'
 _FLAGS_RE = re.compile(rb"FLAGS \(([^)]*)\)")
+
+# A LIST response line: flags, the hierarchy delimiter, then the mailbox name.
+# The name is the remainder rather than a token, because it may contain spaces.
+_LIST_RE = re.compile(rb'^\([^)]*\)\s+(?:"[^"]*"|NIL)\s+(?P<name>.+)$', re.DOTALL)
 
 
 class SearchCriteria:
@@ -174,12 +211,18 @@ class ImapSession:
             ) from exc
 
         try:
-            conn.login(self.account.login, self.account.password)
+            if self.account.oauth is not None:
+                conn.authenticate(
+                    "XOAUTH2",
+                    _xoauth2_responder(self.account.login, self.account.oauth.access_token()),
+                )
+            else:
+                conn.login(self.account.login, self.account.password)
         except imaplib.IMAP4.error as exc:
             conn.logout()
             raise MailAuthError(
-                f"IMAP login failed for {self.account.login}. "
-                "Most providers require an app password rather than the account password. "
+                f"IMAP {self.account.auth} authentication failed for {self.account.login}. "
+                f"{_AUTH_HINTS[self.account.auth]} "
                 f"Server said: {exc}"
             ) from exc
 
@@ -260,33 +303,67 @@ class ImapSession:
         """Select a mailbox.
 
         Args:
-            folder: The mailbox name, e.g. ``INBOX`` or ``[Gmail]/All Mail``.
+            folder: The mailbox name as a user writes it, e.g. ``INBOX``,
+                ``[Gmail]/All Mail`` or ``Wysłane``. Non-ASCII names are
+                encoded to modified UTF-7 on the way out.
             readonly: Open with ``EXAMINE`` so fetches do not set ``\\Seen``.
         """
+        # `self.folder` holds the decoded name: it is what error messages and
+        # `EmailMessage.folder` show, and what a reconnect re-selects.
         self.folder = folder
         self._readonly = readonly
-        # Quoting matters for folder names containing spaces, which Gmail uses.
-        self._command("select", f'"{folder}"', readonly)
+        self._command("select", quote_folder(folder), readonly)
+
+    @staticmethod
+    def _folder_name(entry: object) -> str | None:
+        """Pull the mailbox name out of one LIST response entry.
+
+        Args:
+            entry: One element of the response list. Servers send a line of
+                bytes, or a ``(line, literal)`` tuple when the name needs a
+                literal — which is exactly what happens to the non-ASCII names
+                this method exists to preserve.
+
+        Returns:
+            The name still in modified UTF-7, or None if the entry is not a
+            mailbox line.
+        """
+        if isinstance(entry, tuple):
+            # b'(\\HasNoChildren) "/" {7}' paired with the name itself.
+            literal = entry[1] if len(entry) > 1 else None
+            if isinstance(literal, bytes):
+                return literal.decode("ascii", errors="replace")
+            return None
+        if not isinstance(entry, bytes):
+            return None
+        match = _LIST_RE.match(entry)
+        if match is None:
+            return None
+        name = match.group("name").decode("ascii", errors="replace").strip()
+        if name.startswith('"') and name.endswith('"') and len(name) > 1:
+            name = name[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+        return name
 
     def list_folders(self) -> list[str]:
         """List every mailbox name on the account.
 
         Returns:
-            Mailbox names, decoded. Entries the server reports in an
-            unexpected shape are skipped rather than raising.
+            Mailbox names decoded from modified UTF-7, so a mailbox shows up
+            as ``Wysłane`` rather than ``Wys&AUI-ane``. Entries the server
+            reports in an unexpected shape are skipped rather than raising, and
+            a name that will not decode is returned raw rather than dropped.
         """
         _, response = self._command("list")
         folders: list[str] = []
         for entry in response:
-            if not isinstance(entry, bytes):
+            raw = self._folder_name(entry)
+            if raw is None:
                 continue
-            decoded = entry.decode("utf-8", errors="replace")
-            # b'(\\HasNoChildren) "/" "INBOX"' -> INBOX
-            parts = decoded.rsplit(' "', 1)
-            if len(parts) == 2:
-                folders.append(parts[1].rstrip('"'))
-            else:
-                folders.append(decoded.rsplit(" ", 1)[-1].strip('"'))
+            try:
+                folders.append(decode_folder(raw))
+            except ValueError:
+                logger.warning("Mailbox name %r is not valid UTF-7; listing it raw.", raw)
+                folders.append(raw)
         return folders
 
     def search(
@@ -455,7 +532,7 @@ class ImapSession:
         if not uid_list:
             return []
         joined = ",".join(uid_list)
-        self._command("uid", "COPY", joined, f'"{destination}"')
+        self._command("uid", "COPY", joined, quote_folder(destination))
         self.store_flags(uid_list, "\\Deleted", action="add")
         self._command("expunge")
         return uid_list

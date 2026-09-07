@@ -11,6 +11,7 @@ its own.
 | | |
 |---|---|
 | [Quick start](quickstart.md) | From `pip install` to a working assistant, in ten minutes |
+| [Authentication](authentication.md) | App passwords and OAuth, and which one you want |
 | [Configuration](configuration.md) | Every setting, environment variable and precedence rule |
 | [Toolkit reference](toolkit.md) | `emalia.mail` in full — the library half |
 | [Design](design.md) | Architecture, layer rules, and the mapping from the 2023 code |
@@ -22,6 +23,11 @@ its own.
 **"I want an assistant on an email address."**
 [Quick start](quickstart.md) → [Configuration](configuration.md) →
 [Security](../SECURITY.md).
+
+**"It will not log in to the mailbox."**
+[Authentication](authentication.md). App passwords cannot be created by any
+API, and an OAuth token from an unverified app expires after seven days — both
+are covered there.
 
 **"I just want a decent IMAP/SMTP library."**
 [Toolkit reference](toolkit.md), and
@@ -47,7 +53,7 @@ flowchart LR
     subgraph agent["agent layer, needs railtracks"]
         CLI[cli] --> RUN[runtime] --> AG[agent]
     end
-    subgraph lib["library layer, stdlib only"]
+    subgraph lib["library layer"]
         TL[tools] --> SEC[security]
         TL --> ML[mail]
     end

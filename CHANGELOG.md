@@ -4,6 +4,116 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-09-07
+
+Token authentication for the mailbox, alongside the app passwords that already
+worked. Providers are withdrawing password authentication — Microsoft has turned
+basic auth off for most tenants, and a Google Workspace admin can disable app
+passwords for a whole domain — so an app password is no longer something Emalia
+can assume is available.
+
+There are now four ways to authenticate. The one that matters for a deployed
+system is the service account: no expiry, no browser at any point, and rotation
+by `gcloud` rather than by a person.
+
+Alongside that, Microsoft mailboxes get the same consent flow Google has, and
+mailbox names outside ASCII now work at all.
+
+### Added
+
+- **Modified UTF-7 mailbox names** (RFC 3501 §5.1.3), in `emalia.mail.folders`.
+  A mailbox named `Wysłane`, `已发送` or `Gelöscht` could not previously be
+  selected, and appeared mangled in `list_folders()`. `select()` and `move()`
+  now encode the name and `list_folders()` decodes it, so non-English mailboxes
+  work on every provider. Python's built-in `utf-7` codec is the unmodified
+  RFC 2152 one and does not produce this encoding.
+- **`emalia auth microsoft login`**, the same PKCE consent flow for Outlook.com
+  and Microsoft 365, with `status` and `logout` beside it. `--tenant` accepts a
+  directory id for a single-tenant app registration. Worth having because
+  Microsoft is withdrawing basic auth in December 2026, which makes an app
+  password a dead end on those accounts specifically.
+- `OAuthProvider` gathers the endpoints, scope and revocation URL that differ
+  between identity providers, so the consent flow itself stays plain RFC 6749.
+  `default_token_path()` now takes a provider, and each writes its own file
+  rather than overwriting the other.
+
+- **Service account authentication** with domain-wide delegation, in
+  `ServiceAccountCredentials`. Signs an RS256 assertion to mint a token for a
+  mailbox in a Workspace domain. The credential never expires and is rotated by
+  `gcloud iam service-accounts keys create`, so an unattended deployment never
+  needs a human at a browser. Configured with `EMALIA_SERVICE_ACCOUNT_FILE`, or
+  `EMALIA_SERVICE_ACCOUNT_KEY` for a secret store with no filesystem.
+- **`emalia auth google service-account`**, which prints the numeric client ID
+  and scope the Admin console asks for — the value buried in the key file that
+  most failed setups get wrong — and with `--check` mints a token to prove the
+  delegation is live.
+- **Provider-standard environment names.** `GOOGLE_APP_PASSWORD`,
+  `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`,
+  `GOOGLE_OAUTH_REFRESH_TOKEN` and `GOOGLE_SERVICE_ACCOUNT_FILE` are accepted
+  as aliases for the `EMALIA_` names, for the default prefix only.
+  `GOOGLE_APPLICATION_CREDENTIALS` is honoured when `EMALIA_AUTH` asks for it.
+- **`EMALIA_AUTH`** names the method outright: `password`, `oauth` or
+  `service_account`. Otherwise the method is inferred.
+- An optional `gcp` extra (`pip install "emalia[gcp]"`) carrying
+  `cryptography`, which is the one thing in the mail layer the standard library
+  cannot do. The other credentials never sign anything and pull in nothing.
+- **XOAUTH2 authentication** for IMAP and SMTP. `emalia.mail.oauth` holds
+  `OAuthCredentials`: refresh-token exchange, in-memory access-token caching
+  with an early-refresh margin, the SASL string, and a token file in the
+  `authorized_user` shape `gcloud` and `google-auth` also use. Standard library
+  only, so `emalia.mail` still needs nothing beyond it.
+- **`emalia auth google login`**, an OAuth consent flow with PKCE and a
+  loopback redirect. `--print-env` prints the credential as environment
+  variables for CI; `--no-browser` prints the URL for a headless host. Client
+  files from the Cloud Console or `gws auth setup` are found automatically.
+- **`emalia auth google status`**, which shows the stored grant and, with
+  `--refresh`, proves it still exchanges. **`emalia auth google logout`**
+  deletes the local file.
+- **Several ways to supply each credential**: an environment triple for CI, a
+  token or key file path, inline JSON, or `EMALIA_AUTH=oauth` for the default
+  location. The e2e suite accepts all of them under its own `EMALIA_E2E_`
+  prefix.
+- `emalia check` now verifies the token can be obtained before touching the
+  mail servers, so an expired grant, an unauthorised delegation and a disabled
+  mailbox no longer all look alike.
+- [docs/authentication.md](docs/authentication.md), covering all four methods
+  with a table of which expire and which need a browser, how to create an OAuth
+  client and a service account, how to rotate a key, and the seven-day
+  refresh-token expiry that applies to any unverified app with an External
+  audience.
+
+### Changed
+
+- `MailAccount.password` is now optional, and `MailAccount.auth` reports
+  `"password"`, `"oauth"` or `"service_account"`. Supplying two credentials is
+  refused rather than resolved by precedence. `MailAccount.oauth` accepts any
+  `TokenCredentials`, so the mail sessions never learn which kind they hold.
+- Authentication failures name the mechanism that failed and what fixes it. A
+  rejected refresh token explains the four causes of `invalid_grant`; a service
+  account rejected with `unauthorized_client` names the Admin console page that
+  grants delegation, rather than passing the bare error through.
+- The offline suite now clears every credential variable before each test. It
+  previously depended on the developer's environment being empty, which stopped
+  being true once the shared aliases were accepted.
+- `MailAccount.redacted()` reports the auth method, and for OAuth shows a
+  fragment of the client ID — enough to tell two clients apart — with
+  everything else masked.
+- `list_folders()` reads mailbox names sent as IMAP literals, which is the form
+  servers use for exactly the non-ASCII names it previously dropped, and keeps
+  a name that will not decode rather than losing it from the listing.
+
+### Compatibility
+
+Nothing is removed. `MailAccount(address=..., password=..., imap_host=...)`
+and every existing `EMALIA_*` variable behave exactly as before. The one
+behaviour change is the error raised when no credential is set, which now names
+both options.
+
+`default_token_path()` gained a leading `provider` argument that defaults to
+`"google"`, so existing calls and the existing `google_oauth.json` file are
+unaffected. `list_folders()` now returns decoded names: code comparing against
+a raw `&AUI-` form would need updating, though such code was already broken.
+
 ## [0.1.0] — 2026-09-06
 
 A complete rewrite. The 2023 codebase was a keyword-driven email controller
@@ -130,4 +240,5 @@ exists now:
 - A fresh IMAP login per operation, costing roughly a second each time by the
   original's own measurements.
 
+[0.2.0]: https://github.com/CoronRing/GS-Emalia/releases/tag/v0.2.0
 [0.1.0]: https://github.com/CoronRing/GS-Emalia/releases/tag/v0.1.0

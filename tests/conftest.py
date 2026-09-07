@@ -9,6 +9,7 @@ unless `EMALIA_E2E=1` is set. See `docs/e2e-testing.md`.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,45 @@ import pytest
 from emalia.config import EmaliaConfig, LLMSettings
 from emalia.mail.accounts import MailAccount
 from emalia.mail.models import EmailAddress, EmailMessage
+from emalia.mail.oauth import GOOGLE_ADC_ENV, SHARED_ENV_ALIASES
 from emalia.security.policy import Policy
+
+#: Everything `MailAccount.from_env` consults. Importing `emalia` loads a `.env`
+#: file found by walking up from the working directory, so a developer with a
+#: real `GOOGLE_APP_PASSWORD` two directories up would otherwise change what
+#: these tests assert. Clearing them is what makes the suite hermetic rather
+#: than dependent on whose machine it runs on.
+_CREDENTIAL_ENV = (
+    "EMALIA_ADDRESS",
+    "EMALIA_AUTH",
+    "EMALIA_PASSWORD",
+    "EMALIA_PROVIDER",
+    "EMALIA_USERNAME",
+    "EMALIA_IMAP_HOST",
+    "EMALIA_SMTP_HOST",
+    "EMALIA_OAUTH_CLIENT_ID",
+    "EMALIA_OAUTH_CLIENT_SECRET",
+    "EMALIA_OAUTH_REFRESH_TOKEN",
+    "EMALIA_OAUTH_TOKEN_FILE",
+    "EMALIA_OAUTH_TOKEN_URI",
+    "EMALIA_OAUTH_SCOPE",
+    "EMALIA_SERVICE_ACCOUNT_FILE",
+    "EMALIA_SERVICE_ACCOUNT_KEY",
+    GOOGLE_ADC_ENV,
+    *(alias for aliases in SHARED_ENV_ALIASES.values() for alias in aliases),
+)
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_credentials(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Remove every credential variable before each offline test.
+
+    Autouse and unconditional: a test that wants one sets it explicitly, and
+    one that does not can assert on the absence.
+    """
+    for name in _CREDENTIAL_ENV:
+        monkeypatch.delenv(name, raising=False)
+    yield
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

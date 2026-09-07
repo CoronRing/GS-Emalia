@@ -45,6 +45,11 @@ Any IMAP/SMTP account. For Gmail:
 3. IMAP is on by default for personal Gmail. For a Workspace account an admin
    may need to enable it.
 
+OAuth works here too, on the same terms as everywhere else — see
+[authentication.md](authentication.md). Prefer an app password for this suite
+if you can: the weekly scheduled run is exactly the cadence at which an
+unverified app's seven-day refresh token expiry causes a mystifying red build.
+
 Use a mailbox you do not mind the suite writing to. It sends itself a dozen or
 so messages per run and deletes them afterwards.
 
@@ -70,6 +75,10 @@ EMALIA_E2E=1
 EMALIA_E2E_ADDRESS=emalia-test@gmail.com
 EMALIA_E2E_PASSWORD=your-app-password
 EMALIA_E2E_PROVIDER=gmail
+# Or, instead of EMALIA_E2E_PASSWORD:
+# EMALIA_E2E_OAUTH_CLIENT_ID=
+# EMALIA_E2E_OAUTH_CLIENT_SECRET=
+# EMALIA_E2E_OAUTH_REFRESH_TOKEN=
 
 # For the full round trip
 EMALIA_E2E_PEER_ADDRESS=you@example.com

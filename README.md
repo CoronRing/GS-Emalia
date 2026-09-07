@@ -78,6 +78,10 @@ EMALIA_PROVIDER=gmail
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
+No app password available? `emalia auth google login` sets up OAuth instead, and
+`emalia auth microsoft login` does the same for Outlook and Microsoft 365. See
+[docs/authentication.md](docs/authentication.md).
+
 `emalia.toml` — safe to commit:
 
 ```toml
@@ -357,9 +361,22 @@ Read [SECURITY.md](SECURITY.md) before widening anything. It documents the threa
 <details>
 <summary><strong>Does this work with Gmail?</strong></summary>
 
-Yes. Turn on 2-Step Verification, create an **App Password**, and use that as
-`EMALIA_PASSWORD` — Google has rejected plain account passwords over IMAP since 2022. Set
-`EMALIA_PROVIDER=gmail` and the hosts and ports are filled in for you.
+Yes, two ways. Turn on 2-Step Verification, create an **App Password**, and use that as
+`EMALIA_PASSWORD` — Google has rejected plain account passwords over IMAP since 2022. Or run
+`emalia auth google login` for OAuth, which is the only option when a Workspace admin has
+turned app passwords off. Either way set `EMALIA_PROVIDER=gmail` and the hosts and ports are
+filled in for you. [docs/authentication.md](docs/authentication.md) covers both, including the
+seven-day expiry that catches people out on the OAuth path.
+</details>
+
+<details>
+<summary><strong>Does this work with Outlook or Microsoft 365?</strong></summary>
+
+Yes. Personal Outlook.com accounts still take an app password; most work and school tenants
+have basic authentication switched off, so run `emalia auth microsoft login` instead. Microsoft
+is withdrawing basic auth entirely in December 2026, so OAuth is the path worth setting up
+either way. A single-tenant app registration needs `--tenant <directory-id>`. The console steps
+are in [docs/authentication.md](docs/authentication.md#microsoft-mailboxes).
 </details>
 
 <details>
@@ -443,7 +460,7 @@ of the running process.
 
 ```
 src/emalia/
-├── mail/        MailClient, IMAP, SMTP, MIME, parsing   — stdlib only
+├── mail/        MailClient, IMAP, SMTP, MIME, parsing   — no agent deps
 ├── security/    Policy, sandboxed path resolution
 ├── tools/       six toolsets as railtracks function nodes
 ├── agent.py     system prompt, model resolution, tool wiring

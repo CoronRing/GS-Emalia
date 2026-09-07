@@ -36,8 +36,8 @@ class TestMailAccount:
         with pytest.raises(ConfigurationError, match="Known providers"):
             MailAccount.for_provider("hotmail", "me@x.com", "pw")
 
-    def test_missing_password_is_rejected(self) -> None:
-        with pytest.raises(ConfigurationError, match="no password"):
+    def test_missing_credential_is_rejected(self) -> None:
+        with pytest.raises(ConfigurationError, match="no credential"):
             MailAccount(address="me@x.com", password="", imap_host="imap.x.com")
 
     def test_smtp_host_is_derived_from_imap_when_omitted(self) -> None:

@@ -9,10 +9,11 @@ Settings resolve in this order, each layer overriding the one before:
 4. Arguments passed to `EmaliaConfig.load(...)`
 
 **Secrets only ever come from layer 3.** The loader rejects an `[account]`
-table that tries to set `password`, so `emalia.toml` is safe to commit.
+table that tries to set `password` or `oauth`, so `emalia.toml` is safe to
+commit.
 
 `emalia init` writes a starter pair of files. `emalia check` prints the
-resolved configuration with the password redacted.
+resolved configuration with every credential redacted.
 
 ---
 
@@ -23,7 +24,6 @@ Environment only.
 | Variable | Meaning |
 |---|---|
 | `EMALIA_ADDRESS` | The mailbox address. Required. |
-| `EMALIA_PASSWORD` | The password or app password. Required. |
 | `EMALIA_PROVIDER` | A preset: `gmail`, `outlook`, `yahoo`, `icloud`, `fastmail`, `zoho`, `proton` |
 | `EMALIA_IMAP_HOST` / `EMALIA_IMAP_PORT` | Explicit IMAP endpoint. Overrides the preset. |
 | `EMALIA_SMTP_HOST` / `EMALIA_SMTP_PORT` | Explicit SMTP endpoint. Overrides the preset. |
@@ -36,12 +36,48 @@ Either `EMALIA_PROVIDER` or `EMALIA_IMAP_HOST` is required. Explicit hosts win
 over a preset, so a self-hosted server that otherwise looks like Gmail needs no
 new preset.
 
+### Credentials
+
+Exactly one, resolved in this order. [authentication.md](authentication.md)
+covers how to obtain each.
+
+| Variable | Meaning |
+|---|---|
+| `EMALIA_AUTH` | Name the method outright: `password`, `oauth` or `service_account`. Inferred when unset. |
+| `EMALIA_PASSWORD` | An app password |
+| `EMALIA_SERVICE_ACCOUNT_FILE` | Path to a service account key. No expiry, no browser. |
+| `EMALIA_SERVICE_ACCOUNT_KEY` | The same key's JSON inline, for a secret store with no filesystem |
+| `EMALIA_OAUTH_CLIENT_ID` | OAuth client the grant belongs to. All three of these together, or none. |
+| `EMALIA_OAUTH_CLIENT_SECRET` | That client's secret |
+| `EMALIA_OAUTH_REFRESH_TOKEN` | The long-lived grant |
+| `EMALIA_OAUTH_TOKEN_FILE` | Path to a token file, instead of the three above |
+| `EMALIA_OAUTH_TOKEN_URI` | Non-Google token endpoint. Defaults to Google's. |
+| `EMALIA_OAUTH_SCOPE` | Scope to request. Defaults to `https://mail.google.com/`. |
+
+For the default prefix each also accepts a provider-standard name —
+`GOOGLE_APP_PASSWORD`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`,
+`GOOGLE_OAUTH_REFRESH_TOKEN`, `GOOGLE_SERVICE_ACCOUNT_FILE`. The prefixed name
+wins where both are set, and aliases are invisible to any other prefix so the
+e2e suite stays isolated.
+
+Three rules the loader enforces:
+
+- **A password beside a token credential is rejected.** That combination is
+  what a half-finished migration looks like, and silently preferring either one
+  hides it.
+- **A partial OAuth triple is an error, not a fallback to the password.** A typo
+  in one variable would otherwise send a password to a server you meant to reach
+  with a token.
+- **`GOOGLE_APPLICATION_CREDENTIALS` is honoured only on request**, when
+  `EMALIA_AUTH=service_account`. It is routinely set machine-wide for unrelated
+  Cloud work.
+
 ### Provider notes
 
 | Provider | IMAP | SMTP | Note |
 |---|---|---|---|
-| gmail | imap.gmail.com:993 | smtp.gmail.com:465 (SSL) | Needs an App Password with 2FA on. The account password will not work. |
-| outlook | outlook.office365.com:993 | smtp-mail.outlook.com:587 (STARTTLS) | Personal accounts need an App Password. Many work tenants disable basic auth entirely. |
+| gmail | imap.gmail.com:993 | smtp.gmail.com:465 (SSL) | An App Password with 2FA on, or OAuth. The account password will not work. |
+| outlook | outlook.office365.com:993 | smtp-mail.outlook.com:587 (STARTTLS) | Personal accounts need an App Password. Most work tenants have basic auth off, leaving OAuth as the only way in. |
 | yahoo | imap.mail.yahoo.com:993 | smtp.mail.yahoo.com:465 (SSL) | Needs an App Password. |
 | icloud | imap.mail.me.com:993 | smtp.mail.me.com:587 (STARTTLS) | Needs an app-specific password. |
 | fastmail | imap.fastmail.com:993 | smtp.fastmail.com:465 (SSL) | Create an app password scoped to mail. |

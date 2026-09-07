@@ -70,7 +70,7 @@ from emalia.mail import (
 )
 from emalia.security import Policy
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Credentials live in the environment, and a .env file next to the working
 # directory is the ordinary way to put them there. Loading it here rather than

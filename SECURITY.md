@@ -136,8 +136,41 @@ contents of variables.
 
 Credentials are read from the environment or a `.env` file, never from
 `emalia.toml`, and the config loader **rejects** an `[account]` table that
-tries to set `password`. `MailAccount.redacted()` is what `emalia check`
-prints. Nothing logs a password.
+tries to set `password` or `oauth`. `MailAccount.redacted()` is what
+`emalia check` prints. Nothing logs a password or a token.
+
+An OAuth token file is created with mode `0600` at open time rather than
+chmod'ed afterwards, so the refresh token is never briefly world-readable.
+Windows ignores the mode and inherits the parent directory's ACL. Access tokens
+are held in memory only and never written to disk.
+
+The consent flow binds its redirect listener to `127.0.0.1`, never `0.0.0.0`,
+uses PKCE, and rejects a redirect whose `state` does not match the request it
+made. An authorization code delivered by anything other than that browser
+redirect is therefore useless.
+
+Prefer a token credential where the provider offers one. It can be revoked on
+its own without changing the account password, and it carries one scope rather
+than the whole account.
+
+**Service account keys deserve specific care.** The key file is not encrypted,
+and domain-wide delegation grants the account access to **every** mailbox in
+the domain for the delegated scope — not just the one Emalia is configured for.
+The mailbox address in `EMALIA_ADDRESS` narrows what this process uses; it does
+not narrow what the key could reach if it leaked. So:
+
+- Give the key file to the daemon's user and nobody else.
+- Delegate `https://mail.google.com/` and nothing wider.
+- Rotate on a schedule. `gcloud iam service-accounts keys create` then
+  `keys delete` needs no browser, so there is no excuse not to.
+- Prefer a dedicated Workspace account, or a separate domain, so the blast
+  radius is a mailbox that holds nothing else.
+- `emalia check` prints the `private_key_id` in use, which is how you confirm a
+  rotation actually took effect.
+
+Emalia's own controls — `allowed_senders`, `allowed_recipients`,
+`sandbox_roots` — are enforced regardless of what the credential could reach,
+and are what actually bounds the agent.
 
 ## What Emalia does not do
 

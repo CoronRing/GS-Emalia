@@ -22,6 +22,7 @@ from emalia.mail.compose import (
     load_attachment,
     save_attachments,
 )
+from emalia.mail.folders import decode_folder, encode_folder
 from emalia.mail.imap import ImapSession, SearchCriteria
 from emalia.mail.models import (
     Attachment,
@@ -30,6 +31,16 @@ from emalia.mail.models import (
     EmailSummary,
     parse_address_list,
     summaries_to_text,
+)
+from emalia.mail.oauth import (
+    GMAIL_SCOPE,
+    OUTLOOK_SCOPE,
+    AuthMethod,
+    OAuthCredentials,
+    ServiceAccountCredentials,
+    TokenCredentials,
+    default_token_path,
+    xoauth2_string,
 )
 from emalia.mail.parse import (
     decode_header_value,
@@ -40,21 +51,30 @@ from emalia.mail.parse import (
 from emalia.mail.smtp import SmtpSender
 
 __all__ = [
+    "GMAIL_SCOPE",
+    "OUTLOOK_SCOPE",
     "PROVIDER_PRESETS",
     "Attachment",
+    "AuthMethod",
     "EmailAddress",
     "EmailMessage",
     "EmailSummary",
     "ImapSession",
     "MailAccount",
     "MailClient",
+    "OAuthCredentials",
     "ProviderPreset",
     "SearchCriteria",
+    "ServiceAccountCredentials",
     "SmtpSender",
+    "TokenCredentials",
     "build_forward",
     "build_message",
     "build_reply",
+    "decode_folder",
     "decode_header_value",
+    "default_token_path",
+    "encode_folder",
     "html_to_text",
     "load_attachment",
     "parse_address_list",
@@ -62,4 +82,5 @@ __all__ = [
     "save_attachments",
     "strip_quoted_reply",
     "summaries_to_text",
+    "xoauth2_string",
 ]
