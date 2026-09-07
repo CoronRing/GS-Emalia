@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 704" width="880" height="704" role="img" aria-label="Terminal recording: emalia init, emalia check reporting IMAP, SMTP, model and policy all healthy, then emalia run answering an incoming email using two tools">
+  <title>emalia init, check, run</title>
+  <defs><style>
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 15px; }
+    .chrome { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; }
+        @keyframes k0{0%{opacity:0}1.20%,100%{opacity:1}}.l0{opacity:0;animation:k0 26.0s linear infinite}
+    @keyframes k1{0%,2.98%{opacity:0}4.18%,100%{opacity:1}}.l1{opacity:0;animation:k1 26.0s linear infinite}
+    @keyframes k2{0%,10.74%{opacity:0}11.94%,100%{opacity:1}}.l2{opacity:0;animation:k2 26.0s linear infinite}
+    @keyframes k3{0%,13.72%{opacity:0}14.92%,100%{opacity:1}}.l3{opacity:0;animation:k3 26.0s linear infinite}
+    @keyframes k4{0%,16.70%{opacity:0}17.90%,100%{opacity:1}}.l4{opacity:0;animation:k4 26.0s linear infinite}
+    @keyframes k5{0%,19.69%{opacity:0}20.89%,100%{opacity:1}}.l5{opacity:0;animation:k5 26.0s linear infinite}
+    @keyframes k6{0%,27.44%{opacity:0}28.64%,100%{opacity:1}}.l6{opacity:0;animation:k6 26.0s linear infinite}
+    @keyframes k7{0%,30.42%{opacity:0}31.62%,100%{opacity:1}}.l7{opacity:0;animation:k7 26.0s linear infinite}
+    @keyframes k8{0%,33.41%{opacity:0}34.61%,100%{opacity:1}}.l8{opacity:0;animation:k8 26.0s linear infinite}
+    @keyframes k9{0%,36.39%{opacity:0}37.59%,100%{opacity:1}}.l9{opacity:0;animation:k9 26.0s linear infinite}
+    @keyframes k10{0%,39.37%{opacity:0}40.57%,100%{opacity:1}}.l10{opacity:0;animation:k10 26.0s linear infinite}
+    @keyframes k11{0%,42.35%{opacity:0}43.55%,100%{opacity:1}}.l11{opacity:0;animation:k11 26.0s linear infinite}
+    @keyframes k12{0%,45.34%{opacity:0}46.54%,100%{opacity:1}}.l12{opacity:0;animation:k12 26.0s linear infinite}
+    @keyframes k13{0%,48.32%{opacity:0}49.52%,100%{opacity:1}}.l13{opacity:0;animation:k13 26.0s linear infinite}
+    @keyframes k14{0%,51.30%{opacity:0}52.50%,100%{opacity:1}}.l14{opacity:0;animation:k14 26.0s linear infinite}
+    @keyframes k15{0%,54.29%{opacity:0}55.49%,100%{opacity:1}}.l15{opacity:0;animation:k15 26.0s linear infinite}
+    @keyframes k16{0%,62.04%{opacity:0}63.24%,100%{opacity:1}}.l16{opacity:0;animation:k16 26.0s linear infinite}
+    @keyframes k17{0%,65.02%{opacity:0}66.22%,100%{opacity:1}}.l17{opacity:0;animation:k17 26.0s linear infinite}
+    @keyframes k18{0%,68.01%{opacity:0}69.21%,100%{opacity:1}}.l18{opacity:0;animation:k18 26.0s linear infinite}
+    @keyframes k19{0%,75.76%{opacity:0}76.96%,100%{opacity:1}}.l19{opacity:0;animation:k19 26.0s linear infinite}
+    @keyframes k20{0%,78.74%{opacity:0}79.94%,100%{opacity:1}}.l20{opacity:0;animation:k20 26.0s linear infinite}
+    @keyframes k21{0%,81.73%{opacity:0}82.93%,100%{opacity:1}}.l21{opacity:0;animation:k21 26.0s linear infinite}
+    @keyframes k22{0%,84.71%{opacity:0}85.91%,100%{opacity:1}}.l22{opacity:0;animation:k22 26.0s linear infinite}
+    @keyframes blink{0%,87.02%{opacity:0}87.12%,100%{opacity:1}}.cursor{opacity:0;animation:blink 26.0s steps(1) infinite}
+  </style></defs>
+
+  <rect width="880" height="704" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <path d="M0 40 V10 a10 10 0 0 1 10 -10 H870 a10 10 0 0 1 10 10 V40 Z" fill="#161b22"/>
+  <line x1="0" y1="40" x2="880" y2="40" stroke="#30363d"/>
+  <circle cx="22" cy="20" r="6" fill="#ff5f57"/>
+  <circle cx="42" cy="20" r="6" fill="#febc2e"/>
+  <circle cx="62" cy="20" r="6" fill="#28c840"/>
+  <text class="chrome" x="440" y="25" fill="#7d8590" text-anchor="middle">emalia</text>
+
+  <text class="m l0" y="84.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">$ </tspan><tspan x="44.0" fill="#f0f6fc" textLength="162.0" lengthAdjust="spacingAndGlyphs">pip install emalia</tspan></text>
+  <text class="m l1" y="110.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">$ </tspan><tspan x="44.0" fill="#f0f6fc" textLength="99.0" lengthAdjust="spacingAndGlyphs">emalia init</tspan></text>
+  <text class="m l2" y="136.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="153.0" lengthAdjust="spacingAndGlyphs">Wrote emalia.toml</tspan></text>
+  <text class="m l3" y="162.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="90.0" lengthAdjust="spacingAndGlyphs">Wrote .env</tspan></text>
+  <text class="m l4" y="188.0" xml:space="preserve"></text>
+  <text class="m l5" y="214.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">$ </tspan><tspan x="44.0" fill="#f0f6fc" textLength="108.0" lengthAdjust="spacingAndGlyphs">emalia check</tspan></text>
+  <text class="m l6" y="240.0" xml:space="preserve"><tspan x="26.0" fill="#f0f6fc" textLength="108.0" lengthAdjust="spacingAndGlyphs">Mail servers</tspan></text>
+  <text class="m l7" y="266.0" xml:space="preserve"><tspan x="26.0" fill="#c9d1d9" textLength="72.0" lengthAdjust="spacingAndGlyphs">  imap: </tspan><tspan x="98.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">ok</tspan></text>
+  <text class="m l8" y="292.0" xml:space="preserve"><tspan x="26.0" fill="#c9d1d9" textLength="72.0" lengthAdjust="spacingAndGlyphs">  smtp: </tspan><tspan x="98.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">ok</tspan></text>
+  <text class="m l9" y="318.0" xml:space="preserve"><tspan x="26.0" fill="#f0f6fc" textLength="45.0" lengthAdjust="spacingAndGlyphs">Model</tspan></text>
+  <text class="m l10" y="344.0" xml:space="preserve"><tspan x="26.0" fill="#c9d1d9" textLength="423.0" lengthAdjust="spacingAndGlyphs">  anthropic / claude-sonnet-4-6   credentials: </tspan><tspan x="449.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">ok</tspan></text>
+  <text class="m l11" y="370.0" xml:space="preserve"><tspan x="26.0" fill="#f0f6fc" textLength="54.0" lengthAdjust="spacingAndGlyphs">Policy</tspan></text>
+  <text class="m l12" y="396.0" xml:space="preserve"><tspan x="26.0" fill="#c9d1d9" textLength="18.0" lengthAdjust="spacingAndGlyphs">  </tspan><tspan x="44.0" fill="#3fb950" textLength="45.0" lengthAdjust="spacingAndGlyphs">valid</tspan><tspan x="89.0" fill="#c9d1d9" textLength="477.0" lengthAdjust="spacingAndGlyphs">   senders: you@example.com   tools: email, file_read</tspan></text>
+  <text class="m l13" y="422.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="198.0" lengthAdjust="spacingAndGlyphs">Everything checks out.</tspan></text>
+  <text class="m l14" y="448.0" xml:space="preserve"></text>
+  <text class="m l15" y="474.0" xml:space="preserve"><tspan x="26.0" fill="#3fb950" textLength="18.0" lengthAdjust="spacingAndGlyphs">$ </tspan><tspan x="44.0" fill="#f0f6fc" textLength="90.0" lengthAdjust="spacingAndGlyphs">emalia run</tspan></text>
+  <text class="m l16" y="500.0" xml:space="preserve"><tspan x="26.0" fill="#7d8590" textLength="495.0" lengthAdjust="spacingAndGlyphs">Emalia is watching assistant@gmail.com. Ctrl-C to stop.</tspan></text>
+  <text class="m l17" y="526.0" xml:space="preserve"></text>
+  <text class="m l18" y="552.0" xml:space="preserve"><tspan x="26.0" fill="#a371f7" textLength="54.0" lengthAdjust="spacingAndGlyphs">mail  </tspan><tspan x="80.0" fill="#c9d1d9" textLength="324.0" lengthAdjust="spacingAndGlyphs">you@example.com  "quarterly numbers"</tspan></text>
+  <text class="m l19" y="578.0" xml:space="preserve"><tspan x="26.0" fill="#58a6ff" textLength="72.0" lengthAdjust="spacingAndGlyphs">  gate  </tspan><tspan x="98.0" fill="#3fb950" textLength="72.0" lengthAdjust="spacingAndGlyphs">accepted</tspan><tspan x="170.0" fill="#7d8590" textLength="180.0" lengthAdjust="spacingAndGlyphs">  allowlisted sender</tspan></text>
+  <text class="m l20" y="604.0" xml:space="preserve"><tspan x="26.0" fill="#58a6ff" textLength="72.0" lengthAdjust="spacingAndGlyphs">  tool  </tspan><tspan x="98.0" fill="#d29922" textLength="126.0" lengthAdjust="spacingAndGlyphs">list_directory</tspan><tspan x="224.0" fill="#c9d1d9" textLength="117.0" lengthAdjust="spacingAndGlyphs">('~/reports')</tspan></text>
+  <text class="m l21" y="630.0" xml:space="preserve"><tspan x="26.0" fill="#58a6ff" textLength="72.0" lengthAdjust="spacingAndGlyphs">  tool  </tspan><tspan x="98.0" fill="#d29922" textLength="81.0" lengthAdjust="spacingAndGlyphs">read_file</tspan><tspan x="179.0" fill="#c9d1d9" textLength="216.0" lengthAdjust="spacingAndGlyphs">('2026-Q3-summary.xlsx')</tspan></text>
+  <text class="m l22" y="656.0" xml:space="preserve"><tspan x="26.0" fill="#58a6ff" textLength="72.0" lengthAdjust="spacingAndGlyphs">  send  </tspan><tspan x="98.0" fill="#3fb950" textLength="153.0" lengthAdjust="spacingAndGlyphs">replied in thread</tspan><tspan x="251.0" fill="#7d8590" textLength="135.0" lengthAdjust="spacingAndGlyphs">  2 tools  4.1s</tspan></text>
+  <rect class="cursor" x="26.0" y="669.0" width="9" height="18" fill="#c9d1d9"/>
+</svg>

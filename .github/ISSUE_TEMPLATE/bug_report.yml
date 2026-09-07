@@ -1,0 +1,98 @@
+name: Bug report
+description: Something does not work the way the docs say it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste real credentials, app passwords, API keys, or the
+        contents of a private email. `emalia check` redacts the password; other
+        output may not.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+      placeholder: |
+        I ran `emalia once --dry-run` with two unread messages in the inbox.
+        I expected both to be considered. Only one was.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The smallest sequence that shows the problem.
+      placeholder: |
+        1. emalia init
+        2. set allowed_senders to ["me@example.com"]
+        3. send two messages from that address
+        4. emalia once --dry-run --verbose
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: >
+        Relevant log output, with `--verbose` if you have it. Redact addresses
+        and anything else you would not put in a public issue.
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: Emalia version
+      description: The output of `emalia version`.
+      placeholder: emalia 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version and OS
+      placeholder: 3.12.4 on Windows 11
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Mail provider
+      options:
+        - Gmail
+        - Outlook or Microsoft 365
+        - Yahoo
+        - iCloud
+        - Fastmail
+        - Zoho
+        - Proton (Bridge)
+        - Other or self-hosted
+        - Not applicable
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Which part
+      description: Best guess is fine.
+      options:
+        - The mail toolkit (emalia.mail)
+        - The tools or policy (emalia.tools, emalia.security)
+        - The agent or its replies (emalia.agent)
+        - The listener (emalia.runtime)
+        - The CLI
+        - Configuration or setup
+        - Not sure
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Policy
+      description: >
+        Optional, and often the fastest way to an answer: the Policy section of
+        your `emalia check` output. It contains no secrets.
+      render: text

@@ -1,0 +1,58 @@
+name: End-to-end
+
+# Never on a pull request: this needs real mailbox credentials, and secrets are
+# not available to forks. Run it before a release, or when touching IMAP, SMTP
+# or MIME handling.
+on:
+  workflow_dispatch:
+    inputs:
+      include_llm:
+        description: Also run the tests that call a real model (costs money)
+        type: boolean
+        default: false
+  schedule:
+    # Weekly, so a provider changing its behaviour surfaces before a user
+    # reports it.
+    - cron: "17 6 * * 1"
+
+concurrency:
+  # One at a time: these tests share a mailbox.
+  group: e2e
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+
+      - name: Run the mail and tool suites
+        env:
+          EMALIA_E2E: "1"
+          EMALIA_E2E_ADDRESS: ${{ secrets.EMALIA_E2E_ADDRESS }}
+          EMALIA_E2E_PASSWORD: ${{ secrets.EMALIA_E2E_PASSWORD }}
+          EMALIA_E2E_PROVIDER: ${{ vars.EMALIA_E2E_PROVIDER || 'gmail' }}
+          EMALIA_E2E_PEER_ADDRESS: ${{ secrets.EMALIA_E2E_PEER_ADDRESS }}
+          EMALIA_E2E_PEER_PASSWORD: ${{ secrets.EMALIA_E2E_PEER_PASSWORD }}
+          EMALIA_E2E_TIMEOUT: "240"
+        run: pytest tests/e2e -m "e2e and not llm" -v
+
+      - name: Run the agent and listener suites
+        if: inputs.include_llm || github.event_name == 'schedule'
+        env:
+          EMALIA_E2E: "1"
+          EMALIA_E2E_ADDRESS: ${{ secrets.EMALIA_E2E_ADDRESS }}
+          EMALIA_E2E_PASSWORD: ${{ secrets.EMALIA_E2E_PASSWORD }}
+          EMALIA_E2E_PROVIDER: ${{ vars.EMALIA_E2E_PROVIDER || 'gmail' }}
+          EMALIA_E2E_PEER_ADDRESS: ${{ secrets.EMALIA_E2E_PEER_ADDRESS }}
+          EMALIA_E2E_PEER_PASSWORD: ${{ secrets.EMALIA_E2E_PEER_PASSWORD }}
+          EMALIA_E2E_TIMEOUT: "240"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: pytest tests/e2e -m "e2e and llm" -v

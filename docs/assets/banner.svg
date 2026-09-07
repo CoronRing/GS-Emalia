@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-label="Emalia — an agent that lives in your email, and the typed IMAP and SMTP toolkit behind it">
+  <title>Emalia</title>
+  <defs>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="55%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.22" cy="0.5" r="0.75">
+      <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#6d28d9" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#6d28d9" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      .t { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="360" fill="#0b0f1a"/>
+  <rect width="1200" height="360" fill="url(#glow)"/>
+
+  <g transform="translate(76 96) scale(0.328)">
+    <rect width="512" height="512" rx="112" fill="url(#mark)"/>
+    <rect x="96" y="144" width="320" height="224" rx="28" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/>
+    <path d="M112 170 L256 286 L400 170" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="112" cy="170" r="26" fill="#c4b5fd" stroke="#ffffff" stroke-width="14"/>
+    <circle cx="400" cy="170" r="26" fill="#c4b5fd" stroke="#ffffff" stroke-width="14"/>
+    <circle cx="256" cy="286" r="34" fill="#ffffff"/>
+    <circle cx="256" cy="286" r="13" fill="#6d28d9"/>
+  </g>
+
+  <text class="t" x="290" y="168" font-size="82" font-weight="700" fill="#f8fafc"
+        textLength="248" lengthAdjust="spacingAndGlyphs">Emalia</text>
+
+  <rect x="292" y="190" width="300" height="3" rx="1.5" fill="url(#rule)"/>
+
+  <text class="t" x="290" y="234" font-size="27" font-weight="600" fill="#c4b5fd"
+        textLength="470" lengthAdjust="spacingAndGlyphs">An agent that lives in your email</text>
+  <text class="t" x="290" y="270" font-size="20" fill="#94a3b8"
+        textLength="452" lengthAdjust="spacingAndGlyphs">and the typed IMAP / SMTP toolkit behind it</text>
+
+  <g transform="translate(290 296)">
+    <rect x="0" y="0" width="120" height="30" rx="15" fill="#1e1b4b" stroke="#4338ca" stroke-width="1.5"/>
+    <text class="m" x="60" y="20" font-size="14" fill="#a5b4fc" text-anchor="middle" textLength="92" lengthAdjust="spacingAndGlyphs">Python 3.11+</text>
+
+    <rect x="132" y="0" width="132" height="30" rx="15" fill="#1e1b4b" stroke="#4338ca" stroke-width="1.5"/>
+    <text class="m" x="198" y="20" font-size="14" fill="#a5b4fc" text-anchor="middle" textLength="104" lengthAdjust="spacingAndGlyphs">fully type-hinted</text>
+
+    <rect x="276" y="0" width="176" height="30" rx="15" fill="#1e1b4b" stroke="#4338ca" stroke-width="1.5"/>
+    <text class="m" x="364" y="20" font-size="14" fill="#a5b4fc" text-anchor="middle" textLength="148" lengthAdjust="spacingAndGlyphs">sandboxed by default</text>
+
+    <rect x="464" y="0" width="88" height="30" rx="15" fill="#1e1b4b" stroke="#4338ca" stroke-width="1.5"/>
+    <text class="m" x="508" y="20" font-size="14" fill="#a5b4fc" text-anchor="middle" textLength="60" lengthAdjust="spacingAndGlyphs">MIT</text>
+  </g>
+
+  <!-- decorative graph, echoing the mark: mail flowing into an agent and back out -->
+  <g opacity="0.5" stroke="#4338ca" fill="none" stroke-width="2">
+    <path d="M900 120 C 960 120, 960 180, 1020 180"/>
+    <path d="M900 240 C 960 240, 960 180, 1020 180"/>
+    <path d="M1020 180 C 1080 180, 1080 120, 1140 120"/>
+    <path d="M1020 180 C 1080 180, 1080 240, 1140 240"/>
+  </g>
+  <g fill="#312e81" stroke="#6366f1" stroke-width="2">
+    <circle cx="900" cy="120" r="9"/>
+    <circle cx="900" cy="240" r="9"/>
+    <circle cx="1140" cy="120" r="9"/>
+    <circle cx="1140" cy="240" r="9"/>
+  </g>
+  <circle cx="1020" cy="180" r="16" fill="#6d28d9" stroke="#a78bfa" stroke-width="2.5"/>
+</svg>

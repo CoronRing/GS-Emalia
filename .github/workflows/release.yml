@@ -1,0 +1,47 @@
+name: Release
+
+# Publishing happens only from a pushed tag, never from a local `twine upload`,
+# so every artifact on PyPI corresponds to a commit anyone can check out.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: Verify the tag matches the packaged version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(python -c "import emalia; print(emalia.__version__)")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag $TAG does not match emalia.__version__ $PKG" >&2
+            exit 1
+          fi
+      - run: pytest -m "not network"
+      - run: pip install build twine && python -m build && twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # trusted publishing; no API token stored in the repo
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

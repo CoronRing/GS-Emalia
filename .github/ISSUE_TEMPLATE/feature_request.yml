@@ -1,0 +1,57 @@
+name: Feature request
+description: Something Emalia should be able to do and cannot.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and where does it stop working?
+      placeholder: >
+        I want the agent to file mail into folders by topic, but it can only
+        move messages I name explicitly by UID.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: A rough shape is fine. An API sketch is better.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change
+      options:
+        - A new tool the agent can call
+        - Something in the mail toolkit
+        - A policy or security control
+        - Configuration
+        - CLI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: reachable
+    attributes:
+      label: Reachability
+      description: >
+        Anything the agent can call is reachable from an unauthenticated email
+        sent by a stranger. That changes what a proposal has to answer.
+      options:
+        - label: This would be callable by the agent, so an untrusted email could trigger it.
+        - label: This is library-only — a person calls it from their own code.
+        - label: Not sure.
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: What could go wrong
+      description: >
+        Only if you ticked the first box above. What could a hostile email do
+        with this, and what should stop it?
