@@ -1,0 +1,11 @@
+# Normalise every text file to LF in the repository and in the working tree.
+# Without this, a checkout on Windows bakes CRLF into any wheel built there.
+# The blobs are already LF; this stops that depending on a machine-level
+# core.autocrlf setting.
+* text=auto eol=lf
+
+# Generated artwork is text, but treat the binary-ish assets as binary so git
+# never rewrites them.
+*.png binary
+*.ico binary
+*.woff2 binary
