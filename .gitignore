@@ -166,3 +166,8 @@ emalia.toml
 .agent_temp/
 .log/
 .ruff_cache/
+
+# Working notes kept alongside the repo but not published.
+RT_FEEDBACK.md
+NOTES.md
+notes/
